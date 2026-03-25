@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: pipelineradar
+      POSTGRES_USER: radar
+      POSTGRES_PASSWORD: radarpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  ingestion-service:
+    build: ./services/ingestion-service
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://radar:radarpass@postgres:5432/pipelineradar
+      - REDIS_URL=redis://redis:6379
+      - PORT=3001
+    depends_on:
+      - postgres
+      - redis
+
+  analysis-service:
+    build: ./services/analysis-service
+    ports:
+      - "3002:3002"
+    environment:
+      - DATABASE_URL=postgresql://radar:radarpass@postgres:5432/pipelineradar
+      - REDIS_URL=redis://redis:6379
+      - PORT=3002
+    depends_on:
+      - postgres
+      - redis
+
+  alerts-service:
+    build: ./services/alerts-service
+    ports:
+      - "3003:3003"
+    environment:
+      - DATABASE_URL=postgresql://radar:radarpass@postgres:5432/pipelineradar
+      - REDIS_URL=redis://redis:6379
+      - PORT=3003
+    depends_on:
+      - postgres
+      - redis
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+    depends_on:
+      - ingestion-service
+
+volumes:
+  postgres_data:
