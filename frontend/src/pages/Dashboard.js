@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import StatsBar from '../components/StatsBar';
 import PipelineList from '../components/PipelineList';
 import AlertsFeed from '../components/AlertsFeed';
@@ -12,8 +12,9 @@ function Dashboard() {
   const [pipelines, setPipelines] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [statsRes, pipelinesRes, alertsRes] = await Promise.all([
         axios.get(`${INGESTION_URL}/pipelines/stats`),
@@ -23,31 +24,33 @@ function Dashboard() {
       setStats(statsRes.data);
       setPipelines(pipelinesRes.data);
       setAlerts(alertsRes.data);
+      setLastUpdated(new Date());
     } catch (err) {
       console.error('Failed to fetch data:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchData]);
 
-  if (loading) return <div className="loading">Loading PipelineRadar...</div>;
+  if (loading) return (
+    <div className="loading">
+      <div className="loading-spinner" />
+      <span>Connecting to PipelineRadar...</span>
+    </div>
+  );
 
   return (
     <div className="dashboard">
-      <StatsBar stats={stats} />
+      <StatsBar stats={stats} lastUpdated={lastUpdated} />
       <div className="dashboard-grid">
-        <div className="dashboard-main">
-          <PipelineList pipelines={pipelines} />
-        </div>
-        <div className="dashboard-sidebar">
-          <AlertsFeed alerts={alerts} />
-        </div>
+        <PipelineList pipelines={pipelines} />
+        <AlertsFeed alerts={alerts} />
       </div>
     </div>
   );

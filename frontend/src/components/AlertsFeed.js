@@ -1,43 +1,61 @@
 import React from 'react';
 
-const SEVERITY_COLORS = {
-  critical: '#ef4444',
-  warning: '#f59e0b',
-  info: '#3b82f6'
+const formatTime = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  return `${Math.floor(diff/3600)}h ago`;
 };
 
 function AlertsFeed({ alerts }) {
+  const sorted = [...alerts].reverse();
+
   return (
     <div className="card">
-      <h2 className="card-title">Alerts Feed</h2>
-      {alerts.length === 0 ? (
-        <div className="empty">No alerts yet.</div>
-      ) : (
-        <div className="alerts-list">
-          {[...alerts].reverse().map((alert, i) => (
-            <div key={i} className="alert-item" style={{
-              borderLeft: `3px solid ${SEVERITY_COLORS[alert.severity] || '#6b7280'}`
-            }}>
-              <div className="alert-header">
-                <span className="alert-severity" style={{
-                  color: SEVERITY_COLORS[alert.severity] || '#6b7280'
-                }}>
-                  {alert.severity?.toUpperCase()}
-                </span>
-                <span className="alert-repo">{alert.repo}</span>
-              </div>
-              <div className="alert-message">{alert.message}</div>
-              {alert.suggestions && (
-                <div className="alert-suggestions">
-                  {alert.suggestions.slice(0, 2).map((s, j) => (
-                    <div key={j} className="alert-suggestion">→ {s}</div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+      <div className="card-header">
+        <div className="card-title">
+          <span className="card-title-icon">&#9888;</span>
+          Alerts Feed
         </div>
-      )}
+        <span className="card-count">{alerts.length}</span>
+      </div>
+      <div className="card-body">
+        {sorted.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">&#10003;</div>
+            <div className="empty-text">No alerts detected.<br/>All pipelines are healthy.</div>
+          </div>
+        ) : (
+          <div className="alerts-list">
+            {sorted.map((alert, i) => (
+              <div key={i} className={`alert-item ${alert.severity}`}>
+                <div className="alert-header">
+                  <span className={`severity-badge ${alert.severity}`}>
+                    {alert.severity}
+                  </span>
+                  <span className="alert-repo">{alert.repo}</span>
+                </div>
+                <div className="alert-message">{alert.message}</div>
+                {alert.suggestions && (
+                  <div className="alert-suggestions">
+                    {alert.suggestions.slice(0, 2).map((s, j) => (
+                      <div key={j} className="alert-suggestion">
+                        <span className="suggestion-arrow">&#8594;</span>
+                        {s}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="alert-time">
+                  {formatTime(alert.timestamp || alert.receivedAt)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
