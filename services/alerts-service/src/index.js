@@ -1,11 +1,13 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const { subscriber, connectRedis } = require('./redis');
 const { sendSlackAlert } = require('./notifiers/slack');
 
 const app = express();
 const PORT = process.env.PORT || 3003;
 
+app.use(cors());
 app.use(express.json());
 
 const alertHistory = [];

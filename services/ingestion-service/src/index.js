@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const { initDB } = require('./db');
 const { connectRedis } = require('./redis');
 const webhookRoutes = require('./routes/webhook');
@@ -8,6 +9,7 @@ const pipelineRoutes = require('./routes/pipelines');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.use(cors());
 app.use(express.json());
 
 app.get('/health', (req, res) => {
