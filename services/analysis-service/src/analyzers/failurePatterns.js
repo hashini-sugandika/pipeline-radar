@@ -3,7 +3,12 @@ const { pool } = require('../db');
 const analyzeRun = async (eventData) => {
   const { runId, repo, conclusion, duration, workflow } = eventData;
 
-  if (conclusion !== 'failure' && conclusion !== 'timed_out') return null;
+  console.log(`Analyzing: runId=${runId} repo=${repo} conclusion=${conclusion} workflow=${workflow}`);
+
+  if (conclusion !== 'failure' && conclusion !== 'timed_out') {
+    console.log('Not a failure - skipping analysis');
+    return null;
+  }
 
   const patterns = [];
 
@@ -16,8 +21,12 @@ const analyzeRun = async (eventData) => {
     LIMIT 5
   `, [repo, workflow]);
 
+  console.log(`Recent runs found: ${recentRuns.rows.length}`);
+  console.log('Conclusions:', recentRuns.rows.map(r => r.conclusion));
+
   const failures = recentRuns.rows.filter(r => r.conclusion === 'failure');
   const consecutiveFailures = failures.length;
+  console.log(`Consecutive failures: ${consecutiveFailures}`);
 
   if (consecutiveFailures >= 3) {
     patterns.push({
@@ -68,6 +77,7 @@ const analyzeRun = async (eventData) => {
     });
   }
 
+  console.log(`Patterns detected: ${patterns.length}`);
   return patterns;
 };
 
