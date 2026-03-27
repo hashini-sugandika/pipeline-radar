@@ -1,11 +1,15 @@
 {
   "name": "alerts-service",
   "version": "1.0.0",
-  "description": "PipelineRadar alerts service - sends Slack notifications",
+  "description": "PipelineRadar alerts service",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "test": "jest --passWithNoTests"
+  },
+  "jest": {
+    "testPathIgnorePatterns": ["/node_modules/"]
   },
   "dependencies": {
     "cors": "^2.8.6",
@@ -15,6 +19,7 @@
     "redis": "^4.6.0"
   },
   "devDependencies": {
+    "jest": "^29.0.0",
     "nodemon": "^3.0.0"
   }
 }
