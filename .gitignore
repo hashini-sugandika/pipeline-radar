@@ -10,3 +10,4 @@ gcp-credentials.json
 .DS_Store
 terraform/.terraform/
 terraform/gcp-credentials.json
+!**/package-lock.json
