@@ -12,12 +12,17 @@ spec:
     metadata:
       labels:
         app: ingestion-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
       - name: ingestion-service
         image: ghcr.io/hashini-sugandika/pipeline-radar-ingestion:latest
         ports:
         - containerPort: 3001
+          name: http
         env:
         - name: PORT
           value: "3001"
@@ -40,10 +45,13 @@ kind: Service
 metadata:
   name: ingestion-service
   namespace: pipeline-radar
+  labels:
+    app: ingestion-service
 spec:
   selector:
     app: ingestion-service
   ports:
   - port: 3001
     targetPort: 3001
+    name: http
   type: NodePort

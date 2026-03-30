@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipeline-radar-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  pipeline-radar.json: |
+    {
+      "title": "PipelineRadar",
+      "panels": [
+        {
+          "title": "Webhooks Received",
+          "type": "stat",
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+          "targets": [{
+            "expr": "sum(pipeline_radar_webhooks_total)",
+            "legendFormat": "Total Webhooks"
+          }]
+        },
+        {
+          "title": "Webhook Processing Duration",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+          "targets": [{
+            "expr": "rate(pipeline_radar_webhook_duration_seconds_sum[5m])",
+            "legendFormat": "Duration"
+          }]
+        },
+        {
+          "title": "Webhooks by Conclusion",
+          "type": "piechart",
+          "gridPos": {"h": 8, "w": 6, "x": 12, "y": 4},
+          "targets": [{
+            "expr": "pipeline_radar_webhooks_total",
+            "legendFormat": "{{conclusion}}"
+          }]
+        }
+      ],
+      "schemaVersion": 27,
+      "version": 1
+    }
