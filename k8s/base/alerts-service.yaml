@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alerts-service
+  namespace: pipeline-radar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alerts-service
+  template:
+    metadata:
+      labels:
+        app: alerts-service
+    spec:
+      containers:
+      - name: alerts-service
+        image: ghcr.io/hashini-sugandika/pipeline-radar-alerts:latest
+        ports:
+        - containerPort: 3003
+        env:
+        - name: PORT
+          value: "3003"
+        - name: REDIS_URL
+          value: redis://redis:6379
+        - name: SLACK_WEBHOOK_URL
+          value: ""
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alerts-service
+  namespace: pipeline-radar
+spec:
+  selector:
+    app: alerts-service
+  ports:
+  - port: 3003
+    targetPort: 3003
+  type: NodePort

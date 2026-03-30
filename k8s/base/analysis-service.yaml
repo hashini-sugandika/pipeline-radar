@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analysis-service
+  namespace: pipeline-radar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analysis-service
+  template:
+    metadata:
+      labels:
+        app: analysis-service
+    spec:
+      containers:
+      - name: analysis-service
+        image: ghcr.io/hashini-sugandika/pipeline-radar-analysis:latest
+        ports:
+        - containerPort: 3002
+        env:
+        - name: PORT
+          value: "3002"
+        - name: DATABASE_URL
+          value: postgresql://radar:radarpass@postgres:5432/pipelineradar
+        - name: REDIS_URL
+          value: redis://redis:6379
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analysis-service
+  namespace: pipeline-radar
+spec:
+  selector:
+    app: analysis-service
+  ports:
+  - port: 3002
+    targetPort: 3002
